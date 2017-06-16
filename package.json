@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-transform-semantic-ui-react-imports",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Converts semantic-ui-react module imports to default imports and adds semantic-ui-less imports.",
   "keywords": [
     "semantic-ui-react",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/npm/npm.git"
+    "url": "https://github.com/skleeschulte/babel-plugin-transform-semantic-ui-react-imports.git"
   },
   "main": "index.js",
   "scripts": {
