@@ -1,0 +1,32 @@
+{
+  "name": "babel-plugin-transform-semantic-ui-react-imports",
+  "version": "1.0.0",
+  "description": "Converts semantic-ui-react module imports to default imports and adds semantic-ui-less imports.",
+  "keywords": [
+    "semantic-ui-react",
+    "semantic-ui-less",
+    "imports"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Stefan Kleeschulte",
+    "url": "https://github.com/skleeschulte"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/npm/npm.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "babel-core": "^6.25.0",
+    "mocha": "^3.4.2",
+    "semantic-ui-less": "^2.2.10",
+    "semantic-ui-react": "^0.68.5"
+  },
+  "dependencies": {
+    "directory-tree": "^2.0.0"
+  }
+}
