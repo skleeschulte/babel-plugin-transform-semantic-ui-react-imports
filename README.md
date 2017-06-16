@@ -20,6 +20,13 @@ The LESS imports can e.g. be useful in conjunction with Webpack and [semantic-ui
 
 Both, the conversion of module imports and adding LESS imports, can be enabled/disabled separately. The import type for default imports can also be configured (e.g. `es` or `commonjs`).
 
+## Example repository
+
+You can find an example of how to use this plugin together with the
+semantic-ui-less-module-loader in the
+[tailored-semantic-ui-react-bundles-with-webpack](https://github.com/skleeschulte/tailored-semantic-ui-react-bundles-with-webpack)
+repository.
+
 ## Installation
 
     npm install babel-plugin-transform-semantic-ui-react-imports --save-dev
