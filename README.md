@@ -58,7 +58,12 @@ This requires `semantic-ui-react` to be installed.
 
 #### importType (default: `'es'`)
 
-This is the name of the folder below `semantic-ui-react/dist` that is used for the default imports. `'es'`, `'commonjs'` or `'umd'`.
+This must be either the name of a folder below `semantic-ui-react/dist` or `src`. `'es'`, `'commonjs'` or `'umd'`:
+
+- `importType='es'` example output:  
+  `import Button from 'semantic-ui-react/dist/es/elements/Button/Button.js';`
+- `importType='src'` example output:  
+  `import Button from 'semantic-ui-react/src/elements/Button/Button.js';`
 
 #### addLessImports (default: `false`)
 

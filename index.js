@@ -3,7 +3,7 @@ var fs = require('fs');
 var dirTree = require('directory-tree');
 
 var cache = {
-    jsImports: null,
+    jsImports: {},
     lessImports: null
 };
 
@@ -30,51 +30,73 @@ function getPackagePath(packageName) {
 
 /**
  * Gathers import paths of Semantic UI React components from semantic-ui-react package folder.
+ * @param importType Type of the import (es, commonjs, umd or src).
  * @returns {*} An object where the keys are Semantic UI React component names and the values are the corresponding
- * import paths (relative to semantic-ui-react/dist/[import type]/).
+ * import paths (relative to semantic-ui-react/dist/[import type]/ or semantic-ui-react/src/ (for importType='src').
  */
-function getJsImports() {
-    if (cache.jsImports) return cache.jsImports;
-
-    var semanticUiReactPath = getPackagePath('semantic-ui-react');
-    if (!semanticUiReactPath) {
-        error('Package semantic-ui-react could not be found. Install semantic-ui-react or set convertMemberImports ' +
-            'to false.');
+function getJsImports(importType) {
+    if (cache.jsImports[importType]) {
+        return cache.jsImports[importType];
     }
 
-    var srcDirPath = path.resolve(semanticUiReactPath, 'src');
+    var unprefixedImports = {};
 
-    var searchFolders = [
-        'addons',
-        'behaviors',
-        'collections',
-        'elements',
-        'modules',
-        'views'
-    ];
+    if (cache.jsImports._unprefixedImports) {
+        unprefixedImports = cache.jsImports._unprefixedImports;
+    } else {
+        var semanticUiReactPath = getPackagePath('semantic-ui-react');
+        if (!semanticUiReactPath) {
+            error('Package semantic-ui-react could not be found. Install semantic-ui-react or set convertMemberImports ' +
+                'to false.');
+        }
 
-    var jsImports = {};
+        var srcDirPath = path.resolve(semanticUiReactPath, 'src');
 
-    searchFolders.forEach(function(searchFolder) {
-        var searchRoot = path.resolve(srcDirPath, searchFolder);
+        var searchFolders = [
+            'addons',
+            'behaviors',
+            'collections',
+            'elements',
+            'modules',
+            'views'
+        ];
 
-        dirTree(searchRoot, { extensions: /\.js$/ }, function(item) {
-            var basename = path.basename(item.path, '.js');
+        searchFolders.forEach(function (searchFolder) {
+            var searchRoot = path.resolve(srcDirPath, searchFolder);
 
-            // skip files that do not start with an uppercase letter
-            if (/[^A-Z]/.test(basename[0])) {
-                return;
-            }
+            dirTree(searchRoot, {extensions: /\.js$/}, function (item) {
+                var basename = path.basename(item.path, '.js');
 
-            if (jsImports[basename]) {
-                error('duplicate react component name \'' + basename + '\' - probably the plugin needs an update');
-            }
-            jsImports[basename] = item.path.substring(srcDirPath.length + 1).replace(/\\/g, '/');
+                // skip files that do not start with an uppercase letter
+                if (/[^A-Z]/.test(basename[0])) {
+                    return;
+                }
+
+                if (unprefixedImports[basename]) {
+                    error('duplicate react component name \'' + basename + '\' - probably the plugin needs an update');
+                }
+                unprefixedImports[basename] = item.path.substring(srcDirPath.length).replace(/\\/g, '/');
+            });
         });
-    });
 
-    cache.jsImports = jsImports;
-    return jsImports;
+        cache.jsImports._unprefixedImports = unprefixedImports;
+    }
+
+    var prefix = 'semantic-ui-react/';
+    if (importType === 'src') {
+        prefix += 'src';
+    } else {
+        prefix += 'dist/' + importType;
+    }
+
+    cache.jsImports[importType] = {};
+    for(var key in unprefixedImports) {
+        if (unprefixedImports.hasOwnProperty(key)) {
+            cache.jsImports[importType][key] = prefix + unprefixedImports[key];
+        }
+    }
+
+    return cache.jsImports[importType];
 }
 
 /**
@@ -154,7 +176,6 @@ module.exports = function(babel) {
                             var importPath = jsImports[memberImport.imported.name];
 
                             if (importPath) {
-                                importPath = 'semantic-ui-react/dist/' + importType + '/' + importPath;
                                 replaceImports.push(types.importDeclaration(
                                     [types.importDefaultSpecifier(types.identifier(memberImport.local.name))],
                                     types.stringLiteral(importPrefix + importPath)
