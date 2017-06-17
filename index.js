@@ -285,7 +285,8 @@ module.exports = function(babel) {
                             addLessImport(componentFolder);
                         } else {
                             memberImports.forEach(function(memberImport) {
-                                addLessImport(memberImport.imported.name);
+                                var component = memberImport.imported.name.match(/[A-Z][a-z]+/)[0];
+                                addLessImport(component);
                             });
                         }
                     }
