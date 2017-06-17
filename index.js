@@ -1,6 +1,9 @@
 var path = require('path');
 var fs = require('fs');
+var colors = require('colors/safe');
 var dirTree = require('directory-tree');
+
+var TAG = '[babel-plugin-transform-semantic-ui-react-imports]';
 
 var cache = {
     jsImports: {},
@@ -8,11 +11,19 @@ var cache = {
 };
 
 /**
+ * Prints a tagged warning message.
+ * @param msg The warning message
+ */
+function warn(msg) {
+    console.log(TAG + ' ' + colors.bold.black.bgYellow('WARNING') + ' ' + msg);
+}
+
+/**
  * Throws an Error with a tagged error message.
  * @param msg The error message
  */
 function error(msg) {
-    throw new Error('[babel-plugin-transform-semantic-ui-react-imports]' + msg);
+    throw new Error(TAG + ' ' + msg);
 }
 
 /**
@@ -131,12 +142,60 @@ function getLessImports() {
     return lessImports;
 }
 
+/**
+ * Checks and warns if babel-plugin-lodash and this plugin are used in a way so that they might likely screw things up.
+ * @param foundLodashPluginWithIdSemanticReactUi True if babel-plugin-lodash is mangling semantic-ui-react
+ * @param convertMemberImports convertMemberImports setting
+ * @param addLessImports addLessImports setting
+ */
+function checkBabelPluginLodash(foundLodashPluginWithIdSemanticReactUi, convertMemberImports, addLessImports) {
+    if (convertMemberImports) {
+        if (foundLodashPluginWithIdSemanticReactUi) {
+            var msg = 'You are converting semantic-ui-react imports with this plugin and with ' +
+                'babel-plugin-lodash. Either remove semantic-ui-react from babel-plugin-lodash\'s id list, ' +
+                'or set convertMemberImports to false for this plugin.';
+
+            if (!addLessImports) {
+                msg += ' If you choose to set convertMemberImports to false, you can as well remove this ' +
+                    'plugin completely, as you are not using the addLessImports option (the plugin would not ' +
+                    'have any effect).';
+            }
+
+            warn(msg);
+        }
+    }
+}
+
 module.exports = function(babel) {
     var types = babel.types;
+
+    var foundLodashPluginWithIdSemanticReactUi;
+    var babelPluginLodashChecked;
 
     var addedLessImports = {};
 
     return {
+        pre: function(state) {
+            const lodashPlugins = state.opts.plugins.filter(function(plugin) {
+                return plugin[0].key === 'lodash' || plugin[0].key === 'babel-plugin-lodash';
+            });
+
+            foundLodashPluginWithIdSemanticReactUi = false;
+            lodashPlugins.forEach(function(lodashPlugin) {
+                if (lodashPlugin[1] && lodashPlugin[1].id) {
+                    var ids = [].concat(lodashPlugin[1].id);
+                    console.log(ids);
+                    ids.forEach(function(id) {
+                        if (id === 'semantic-ui-react') {
+                            foundLodashPluginWithIdSemanticReactUi = true;
+                        }
+                    });
+                }
+            });
+
+            babelPluginLodashChecked = false;
+        },
+
         visitor: {
             ImportDeclaration: function(path, state) {
                 var packageRegex = /^((.*!)?semantic-ui-react)([/\\].*)?$/;
@@ -151,6 +210,12 @@ module.exports = function(babel) {
                         : true;
                     var importType = state.opts.importType || 'es';
                     var addLessImports = state.opts.addLessImports || false;
+
+                    if (!babelPluginLodashChecked) {
+                        checkBabelPluginLodash(foundLodashPluginWithIdSemanticReactUi, convertMemberImports,
+                            addLessImports);
+                        babelPluginLodashChecked = true;
+                    }
 
                     var defaultImport = path.node.specifiers.filter(function(specifier) {
                         return specifier.type !== 'ImportSpecifier';
