@@ -22,7 +22,7 @@ describe('babel-plugin-transform-semantic-ui-react-imports', function() {
         var sourceFilePath = path.resolve(fixtureDir, 'source.js');
         var expectedOutput = fs.readFileSync(path.resolve(fixtureDir, 'expected.js'), 'utf8');
 
-        it(fixture.replace('-', ' '), function() {
+        it(fixture.replace(/-/g, ' '), function() {
             var transformed = babel.transformFileSync(sourceFilePath, {
                 babelrc: false,
                 compact: false,
