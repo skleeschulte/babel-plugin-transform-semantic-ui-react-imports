@@ -82,11 +82,11 @@ function getJsImports(importType) {
         cache.jsImports._unprefixedImports = unprefixedImports;
     }
 
-    var prefix = 'semantic-ui-react/';
+    var prefix;
     if (importType === 'src') {
-        prefix += 'src';
+        prefix = '/src';
     } else {
-        prefix += 'dist/' + importType;
+        prefix = '/dist/' + importType;
     }
 
     cache.jsImports[importType] = {};
@@ -139,10 +139,10 @@ module.exports = function(babel) {
     return {
         visitor: {
             ImportDeclaration: function(path, state) {
-                var sourceRegex = /^(.*!)?semantic-ui-react(\/dist\/[^/]+\/[^/]+\/([^/]+)(\/[^/]*)?)?$/;
-                var match = sourceRegex.exec(path.node.source.value);
-                var importPrefix = match && match[1] || '';
-                var componentFolder = match && match[3];
+                var packageRegex = /^((.*!)?semantic-ui-react)([/\\].*)?$/;
+                var match = packageRegex.exec(path.node.source.value);
+                var importBase = match && match[1];
+                var importPath = match && match[3] || '';
 
                 // If there is a match, the current import is some kind of semantic-ui-react import.
                 if (match) {
@@ -173,12 +173,12 @@ module.exports = function(babel) {
 
                         // For each member import of a known component, add a separate import statement
                         memberImports.forEach(function(memberImport) {
-                            var importPath = jsImports[memberImport.imported.name];
+                            var componentImportPath = jsImports[memberImport.imported.name];
 
-                            if (importPath) {
+                            if (componentImportPath) {
                                 replaceImports.push(types.importDeclaration(
                                     [types.importDefaultSpecifier(types.identifier(memberImport.local.name))],
-                                    types.stringLiteral(importPrefix + importPath)
+                                    types.stringLiteral(importBase + componentImportPath)
                                 ));
                             } else {
                                 unmodifiedImports.push(memberImport);
@@ -194,6 +194,10 @@ module.exports = function(babel) {
                     }
 
                     if (addLessImports) {
+                        var componentFolderRegex = /[/\\](src|dist[/\\][^/\\]+)[/\\][^/\\]+[/\\]([^/\\]+)([/\\]|$)/;
+                        var componentFolderMatch = componentFolderRegex.exec(importPath);
+                        var componentFolder = componentFolderMatch && componentFolderMatch[2];
+
                         var lessImports = getLessImports();
 
                         var addLessImport = function(component) {
@@ -202,12 +206,12 @@ module.exports = function(babel) {
                             if (addedLessImports[component]) return;
                             addedLessImports[component] = true;
 
-                            var importPath = lessImports[component];
+                            var lessImportPath = lessImports[component];
 
-                            if (importPath) {
+                            if (lessImportPath) {
                                 addImports.push(types.importDeclaration(
                                     [],
-                                    types.stringLiteral(importPath)
+                                    types.stringLiteral(lessImportPath)
                                 ));
                             }
                         };

@@ -30,3 +30,5 @@ import 'semantic-ui-less/definitions/elements/rail.less';
 import Reveal from 'some-webpack-loader!semantic-ui-react/dist/es/elements/Reveal/Reveal.js';
 import 'semantic-ui-less/definitions/elements/reveal.less';
 import { Segment } from 'some-other-package';
+import Step from 'semantic-ui-react/src/elements/Step/Step.js';
+import 'semantic-ui-less/definitions/elements/step.less';
