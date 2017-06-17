@@ -121,6 +121,63 @@ semantic-ui-less, this is possible:
         ]
     }
 
+## How it works
+
+### Converting member imports (`convertMemberImports: true`)
+
+The folders addons, behaviors, collections, elements, modules and views
+in semantic-ui-react/src are searched for *.js files that have a name
+that begins with an uppercase letter. Each file is added to a map, which
+then looks like this:
+
+    {
+        Confirm: '/addons/Confirm/Confirm.js',
+        Portal: '/addons/Portal/Portal.js',
+        Radio: '/addons/Radio/Radio.js',
+        Select: '/addons/Select/Select.js',
+        ...
+    }
+
+Together with the `importType` setting, this map is used to get the
+import paths for the components, like
+`semantic-ui-react/dist/es/addons/Confirm/Confirm.js` for the Confirm
+component.
+
+The plugin matches each member import from semantic-ui-react against the
+generated map. If an entry is found, the member import is removed and
+replaced with a default import with the import path as described above.
+
+### Adding less imports (`addLessImports: true`)
+
+All the `@import` statements in the semantic.less file in the
+semantic-ui-less package root are parsed to generates a map which
+looks like this:
+
+    {
+        reset: 'semantic-ui-less/definitions/globals/reset.less',
+        site: 'semantic-ui-less/definitions/globals/site.less',
+        button: 'semantic-ui-less/definitions/elements/button.less',
+        container: 'semantic-ui-less/definitions/elements/container.less',
+        ...
+    }
+
+Finding the matching less import for an import from semantic-ui-react
+works like this:
+
+- If the import statement has member imports, iterate over the member
+  imports. For each member import, take the imported name (e.g.
+  `BreadcrumbDivider`, get the first element of the camel-cased name
+  (e.g. `Breadcrumb`), convert it to lowercase (e.g. `breadcrumb`),
+  and look it up in the map.
+- If the import statement has only a default import, check if the path
+  of the import statement matches either
+  `semantic-ui-react/dist/.../.../COMPONENT_FOLDER...` or
+  `semantic-ui-react/src/.../COMPONENT_FOLDER...`. If so, convert
+  COMPONENT_FOLDER to lowercase and look it up in the map.
+  
+If there is a match, add the less import statement. Each less import is
+only added once.
+
 ## Running the tests
 
     git clone https://github.com/skleeschulte/babel-plugin-transform-semantic-ui-react-imports.git
