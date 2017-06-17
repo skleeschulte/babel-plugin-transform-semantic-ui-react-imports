@@ -159,7 +159,7 @@ replaced with a default import with the import path as described above.
 ### Adding less imports (`addLessImports: true`)
 
 All the `@import` statements in the semantic.less file in the
-semantic-ui-less package root are parsed to generates a map which
+semantic-ui-less package root are parsed to generate a map which
 looks like this:
 
     {
@@ -180,8 +180,8 @@ works like this:
   and look it up in the map.
 - If the import statement has only a default import, check if the path
   of the import statement matches either
-  `semantic-ui-react/dist/.../.../COMPONENT_FOLDER...` or
-  `semantic-ui-react/src/.../COMPONENT_FOLDER...`. If so, convert
+  `semantic-ui-react/dist/.../.../COMPONENT_FOLDER[/...]` or
+  `semantic-ui-react/src/.../COMPONENT_FOLDER[/...]`. If so, convert
   COMPONENT_FOLDER to lowercase and look it up in the map.
   
 If there is a match, add the less import statement. Each less import is
