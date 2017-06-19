@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/skleeschulte/babel-plugin-transform-semantic-ui-react-imports.svg?branch=master)](https://travis-ci.org/skleeschulte/babel-plugin-transform-semantic-ui-react-imports)
 
-This plugin can convert module imports from `semantic-ui-react` to default imports. Example:
+This plugin can convert module imports from `semantic-ui-react` to
+default imports. Example:
 
     // Input:
     import { Button, Container } from 'semantic-ui-react';
@@ -11,14 +12,24 @@ This plugin can convert module imports from `semantic-ui-react` to default impor
     import Button from 'semantic-ui-react/dist/es/elements/Button/Button.js';
     import Container from 'semantic-ui-react/dist/es/elements/Container/Container.js';
 
-In addition, the plugin can add import statements for LESS files from `semantic-ui-less`. For the example input above, this would produce:
+In addition, the plugin can add import statements for CSS files from
+`semantic-ui-css` and LESS files from `semantic-ui-less`. For the
+example input above, this would produce:
 
+    // semantic-ui-css imports:
+    import 'semantic-ui-css/components/button.css';
+    import 'semantic-ui-css/components/container.css';
+    
+    // semantic-ui-less imports:
     import 'semantic-ui-less/definitions/elements/button.less';
     import 'semantic-ui-less/definitions/elements/container.less';
 
-The LESS imports can e.g. be useful in conjunction with Webpack and [semantic-ui-less-module-loader](https://www.npmjs.com/package/semantic-ui-less-module-loader).
+The LESS imports can e.g. be useful in conjunction with Webpack and
+[semantic-ui-less-module-loader](https://www.npmjs.com/package/semantic-ui-less-module-loader).
 
-Both, the conversion of module imports and adding LESS imports, can be enabled/disabled separately. The import type for default imports can also be configured (e.g. `es` or `commonjs`).
+Both, the conversion of module imports and adding CSS/LESS imports, can
+be enabled/disabled separately. The import type for default imports can
+also be configured (e.g. `es` or `commonjs`).
 
 ## Example repository
 
@@ -31,7 +42,11 @@ repository.
 
     npm install babel-plugin-transform-semantic-ui-react-imports --save-dev
 
-Depending on how you use the plugin, you also need to install [semantic-ui-react](https://www.npmjs.com/package/semantic-ui-react) and/or [semantic-ui-less](https://www.npmjs.com/package/semantic-ui-less) (see below).
+Depending on how you use the plugin, you also need to install
+[semantic-ui-react](https://www.npmjs.com/package/semantic-ui-react),
+[semantic-ui-css](https://www.npmjs.com/package/semantic-ui-css) and/or
+[semantic-ui-less](https://www.npmjs.com/package/semantic-ui-less) (see
+below).
 
 ## Usage
 
@@ -43,7 +58,8 @@ Add the plugin to your Babel configuration (e.g. in .babelrc):
 
 ### Plugin options
 
-The plugin supports the following options (these are the default values):
+The plugin supports the following options (these are the default
+values):
 
     {
         "plugins": [
@@ -51,6 +67,8 @@ The plugin supports the following options (these are the default values):
                 "transform-semantic-ui-react-imports", {
                     "convertMemberImports": true,
                     "importType": "es",
+                    "addCssImports": false,
+                    "importMinifiedCssFiles": false,
                     "addLessImports": false
                 }
             ]
@@ -59,22 +77,39 @@ The plugin supports the following options (these are the default values):
 
 #### convertMemberImports (default: `true`)
 
-If true, member imports from `semantic-ui-react` are converted to default imports.
+If true, member imports from `semantic-ui-react` are converted to
+default imports.
 
 This requires `semantic-ui-react` to be installed.
 
 #### importType (default: `'es'`)
 
-This must be either the name of a folder below `semantic-ui-react/dist` or `src`. `'es'`, `'commonjs'` or `'umd'`:
+This must be either the name of a folder below `semantic-ui-react/dist`
+or `src`. `'es'`, `'commonjs'` or `'umd'`:
 
 - `importType='es'` example output:  
   `import Button from 'semantic-ui-react/dist/es/elements/Button/Button.js';`
 - `importType='src'` example output:  
   `import Button from 'semantic-ui-react/src/elements/Button/Button.js';`
 
+#### addCssImports (default: `false`)
+
+If true, imports for CSS files from `semantic-ui-css` will be added
+according to what is required from `semantic-ui-react`. Also works with
+`convertMemberImports=false`.
+
+This requires `semantic-ui-css` to be installed.
+
+#### importMinifiedCssFiles (default: `false`)
+
+If true, pre-minified CSS files from `semantic-ui-css` will be added
+(`semantic-ui-css/components/[COMPONENT].min.css`).
+
 #### addLessImports (default: `false`)
 
-If true, imports for LESS files from `semantic-ui-less` will be added according to what is required from `semantic-ui-react`. Also works with `convertMemberImports=false`.
+If true, imports for LESS files from `semantic-ui-less` will be added
+according to what is required from `semantic-ui-react`. Also works with
+`convertMemberImports=false`.
 
 This requires `semantic-ui-less` to be installed.
 
@@ -96,13 +131,14 @@ semantic-ui-react, which results in even smaller builds.
 If you prefer to use babel-plugin-lodash to convert the imports from
 semantic-ui-react and still want to use
 babel-plugin-transform-semantic-ui-react-imports to add imports from
-semantic-ui-less, this is possible:
+semantic-ui-css or semantic-ui-less, this is possible. Example Babel
+configuration for adding CSS imports:
 
     {
         "plugins": [
             ["transform-semantic-ui-react-imports", {
                 "convertMemberImports": false,
-                "addLessImports": true
+                "addCssImports": true
             }],
             ["lodash", { "id": ["semantic-ui-react"] }]
         ]
@@ -156,6 +192,45 @@ The plugin matches each member import from semantic-ui-react against the
 generated map. If an entry is found, the member import is removed and
 replaced with a default import with the import path as described above.
 
+### Adding css imports (`addCssImports: true`)
+
+The folder semantic-ui-css/components is searched for .css files to
+generate two maps, one for .css files and one for .min.css files:
+
+    {
+        unminified: {
+            accordion: 'semantic-ui-css/components/accordion.css',
+            ad: 'semantic-ui-css/components/ad.css',
+            breadcrumb: 'semantic-ui-css/components/breadcrumb.css',
+            button: 'semantic-ui-css/components/button.css',
+            ...
+        }
+        minified: {
+            accordion: 'semantic-ui-css/components/accordion.min.css',
+            ad: 'semantic-ui-css/components/ad.min.css',
+            breadcrumb: 'semantic-ui-css/components/breadcrumb.min.css',
+            button: 'semantic-ui-css/components/button.min.css',
+            ...
+        }
+    }
+
+Finding the matching css import for an import from semantic-ui-react
+works like this:
+
+- If the import statement has member imports, iterate over the member
+  imports. For each member import, take the imported name (e.g.
+  `BreadcrumbDivider`, get the first element of the camel-cased name
+  (e.g. `Breadcrumb`), convert it to lowercase (e.g. `breadcrumb`),
+  and look it up in the map.
+- If the import statement has only a default import, check if the path
+  of the import statement matches either
+  `semantic-ui-react/dist/.../.../COMPONENT_FOLDER[/...]` or
+  `semantic-ui-react/src/.../COMPONENT_FOLDER[/...]`. If so, convert
+  COMPONENT_FOLDER to lowercase and look it up in the map.
+  
+Lookups respect the `importMinifiedCssFiles` option. If there is a
+match, add the css import statement. Each css import is only added once.
+
 ### Adding less imports (`addLessImports: true`)
 
 All the `@import` statements in the semantic.less file in the
@@ -170,22 +245,8 @@ looks like this:
         ...
     }
 
-Finding the matching less import for an import from semantic-ui-react
-works like this:
-
-- If the import statement has member imports, iterate over the member
-  imports. For each member import, take the imported name (e.g.
-  `BreadcrumbDivider`, get the first element of the camel-cased name
-  (e.g. `Breadcrumb`), convert it to lowercase (e.g. `breadcrumb`),
-  and look it up in the map.
-- If the import statement has only a default import, check if the path
-  of the import statement matches either
-  `semantic-ui-react/dist/.../.../COMPONENT_FOLDER[/...]` or
-  `semantic-ui-react/src/.../COMPONENT_FOLDER[/...]`. If so, convert
-  COMPONENT_FOLDER to lowercase and look it up in the map.
-  
-If there is a match, add the less import statement. Each less import is
-only added once.
+The rest works like when adding css imports (except that there are no
+minified versions available).
 
 ## Running the tests
 

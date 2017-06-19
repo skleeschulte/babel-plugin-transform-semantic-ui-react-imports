@@ -7,6 +7,7 @@ var TAG = '[babel-plugin-transform-semantic-ui-react-imports]';
 
 var cache = {
     jsImports: {},
+    cssImports: null,
     lessImports: null
 };
 
@@ -111,6 +112,48 @@ function getJsImports(importType) {
 }
 
 /**
+ * Gathers import paths for .css files from semantic-ui-css/components
+ * @param returnMinified If true, returns import paths for minified css files.
+ * @returns {*} An Object where the keys are semantic-ui-css component names and the values are the corresponding import
+ * paths.
+ */
+function getCssImports(returnMinified) {
+    var returnVersion = returnMinified ? 'minified' : 'unminified';
+    if (cache.cssImports) return cache.cssImports[returnVersion];
+
+    var semanticUiCssPath = getPackagePath('semantic-ui-css');
+    if (!semanticUiCssPath) {
+        error('Package semantic-ui-css could not be found. Install semantic-ui-css or set addCssImports to false.');
+    }
+
+    var componentsDirPath = path.resolve(semanticUiCssPath, 'components');
+
+    var cssImports = {
+        unminified: {},
+        minified: {}
+    };
+    var componentFiles = fs.readdirSync(componentsDirPath);
+    componentFiles.filter(function(componentFile) {
+        return componentFile.match(/\.css$/i);
+    }).forEach(function(componentFile) {
+        var minified = componentFile.match(/\.min\.css$/i);
+        var version = minified ? 'minified' : 'unminified';
+        var extension = minified ? '.min.css' : '.css';
+        var component = path.basename(componentFile, extension);
+
+        if (cssImports[version][component]) {
+            error('duplicate ' + version + ' css component name \'' + component + '\' - probably the plugin needs an ' +
+                'update');
+        }
+
+        cssImports[version][component] = 'semantic-ui-css/components/' + componentFile;
+    });
+
+    cache.cssImports = cssImports;
+    return cssImports[returnVersion];
+}
+
+/**
  * Extracts import paths for .less files from semantic-ui-less/semantic.less file.
  * @returns {{}} An object where the keys are semantic-ui-less component names and the values are the corresponding
  * import paths.
@@ -169,18 +212,28 @@ function checkBabelPluginLodash(foundLodashPluginWithIdSemanticReactUi, convertM
 module.exports = function(babel) {
     var types = babel.types;
 
+    var addedCssImports;
+    var addedLessImports;
+
+    var multipleStyleImportsChecked;
+
     var foundLodashPluginWithIdSemanticReactUi;
     var babelPluginLodashChecked;
 
-    var addedLessImports = {};
-
     return {
         pre: function(state) {
+            addedCssImports = {};
+            addedLessImports = {};
+
+            multipleStyleImportsChecked = false;
+
+            foundLodashPluginWithIdSemanticReactUi = false;
+            babelPluginLodashChecked = false;
+
             const lodashPlugins = state.opts.plugins.filter(function(plugin) {
                 return plugin[0].key === 'lodash' || plugin[0].key === 'babel-plugin-lodash';
             });
 
-            foundLodashPluginWithIdSemanticReactUi = false;
             lodashPlugins.forEach(function(lodashPlugin) {
                 if (lodashPlugin[1] && lodashPlugin[1].id) {
                     var ids = [].concat(lodashPlugin[1].id);
@@ -192,8 +245,6 @@ module.exports = function(babel) {
                     });
                 }
             });
-
-            babelPluginLodashChecked = false;
         },
 
         visitor: {
@@ -209,7 +260,17 @@ module.exports = function(babel) {
                         ? state.opts.convertMemberImports
                         : true;
                     var importType = state.opts.importType || 'es';
+                    var addCssImports = state.opts.addCssImports || false;
+                    var importMinifiedCssFiles = state.opts.importMinifiedCssFiles || false;
                     var addLessImports = state.opts.addLessImports || false;
+
+                    if (!multipleStyleImportsChecked) {
+                        if (addCssImports && addLessImports) {
+                            warn('The options addCssImports and addLessImports are both enabled. This will add css ' +
+                                'imports from semantic-ui-css AND less imports from semantic-ui-less.');
+                        }
+                        multipleStyleImportsChecked = true;
+                    }
 
                     if (!babelPluginLodashChecked) {
                         checkBabelPluginLodash(foundLodashPluginWithIdSemanticReactUi, convertMemberImports,
@@ -258,35 +319,49 @@ module.exports = function(babel) {
                         }
                     }
 
-                    if (addLessImports) {
+                    if (addLessImports || addCssImports) {
                         var componentFolderRegex = /[/\\](src|dist[/\\][^/\\]+)[/\\][^/\\]+[/\\]([^/\\]+)([/\\]|$)/;
                         var componentFolderMatch = componentFolderRegex.exec(importPath);
                         var componentFolder = componentFolderMatch && componentFolderMatch[2];
 
-                        var lessImports = getLessImports();
-
-                        var addLessImport = function(component) {
+                        var addStyleImports = function(component) {
                             component = component.toLowerCase();
 
-                            if (addedLessImports[component]) return;
-                            addedLessImports[component] = true;
+                            if (addCssImports && !addedCssImports[component]) {
+                                addedCssImports[component] = true;
 
-                            var lessImportPath = lessImports[component];
+                                var cssImports = getCssImports(importMinifiedCssFiles);
+                                var cssImportPath = cssImports[component];
 
-                            if (lessImportPath) {
-                                addImports.push(types.importDeclaration(
-                                    [],
-                                    types.stringLiteral(lessImportPath)
-                                ));
+                                if (cssImportPath) {
+                                    addImports.push(types.importDeclaration(
+                                        [],
+                                        types.stringLiteral(cssImportPath)
+                                    ));
+                                }
+                            }
+
+                            if (addLessImports && !addedLessImports[component]) {
+                                addedLessImports[component] = true;
+
+                                var lessImports = getLessImports();
+                                var lessImportPath = lessImports[component];
+
+                                if (lessImportPath) {
+                                    addImports.push(types.importDeclaration(
+                                        [],
+                                        types.stringLiteral(lessImportPath)
+                                    ));
+                                }
                             }
                         };
 
                         if (componentFolder) {
-                            addLessImport(componentFolder);
+                            addStyleImports(componentFolder);
                         } else {
                             memberImports.forEach(function(memberImport) {
                                 var component = memberImport.imported.name.match(/[A-Z][a-z]+/)[0];
-                                addLessImport(component);
+                                addStyleImports(component);
                             });
                         }
                     }
