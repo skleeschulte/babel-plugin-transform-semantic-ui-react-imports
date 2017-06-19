@@ -9,3 +9,4 @@ import Loader from 'semantic-ui-react/dist/es/elements/Loader';
 import Rail from 'semantic-ui-react/dist/es/elements/Rail/Rail.js';
 import { Reveal } from 'some-webpack-loader!semantic-ui-react';
 import { Segment } from 'some-other-package';
+import { Breadcrumb as SomeOtherName } from 'semantic-ui-react';
