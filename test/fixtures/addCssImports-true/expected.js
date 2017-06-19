@@ -32,3 +32,5 @@ import 'semantic-ui-css/components/reveal.css';
 import { Segment } from 'some-other-package';
 import Step from 'semantic-ui-react/src/elements/Step/Step.js';
 import 'semantic-ui-css/components/step.css';
+import SomeOtherName from 'semantic-ui-react/dist/es/collections/Breadcrumb/Breadcrumb.js';
+import 'semantic-ui-css/components/breadcrumb.css';
