@@ -1,0 +1,12 @@
+import Button from 'semantic-ui-react/dist/es/elements/Button/Button.js';
+import 'semantic-ui-css/components/button.css';
+import Loader from 'semantic-ui-react/dist/es/elements/Loader';
+import 'semantic-ui-css/components/loader.css';
+import Rail from 'semantic-ui-react/dist/es/elements/Rail/Rail.js';
+import 'semantic-ui-css/components/rail.css';
+import SomeOtherName from 'semantic-ui-react/dist/es/elements/Button/Button.js';
+import 'semantic-ui-css/components/button.css';
+import Loader2 from 'semantic-ui-react/dist/es/elements/Loader';
+import 'semantic-ui-css/components/loader.css';
+import Rail2 from 'semantic-ui-react/dist/es/elements/Rail/Rail.js';
+import 'semantic-ui-css/components/rail.css';

@@ -69,7 +69,8 @@ values):
                     "importType": "es",
                     "addCssImports": false,
                     "importMinifiedCssFiles": false,
-                    "addLessImports": false
+                    "addLessImports": false,
+                    "addDuplicateStyleImports": false
                 }
             ]
         ]
@@ -112,6 +113,21 @@ according to what is required from `semantic-ui-react`. Also works with
 `convertMemberImports=false`.
 
 This requires `semantic-ui-less` to be installed.
+
+#### addDuplicateStyleImports (default: `false`)
+
+By default, each style import (css file or less file) will only be added
+once. If `addDuplicateStyleImports` is true, style imports will be added
+multiple times:
+
+    // Input:
+    import { Menu, MenuItem } from 'semantic-ui-react';
+    
+    // Output:
+    import Menu from 'semantic-ui-react/dist/es/collections/Menu/Menu.js';
+    import 'semantic-ui-css/components/menu.css';
+    import MenuItem from 'semantic-ui-react/dist/es/collections/Menu/MenuItem.js';
+    import 'semantic-ui-css/components/menu.css'; // only added if addDuplicateStyleImports is true
 
 ### Combining with babel-plugin-lodash
 

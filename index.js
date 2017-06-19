@@ -263,6 +263,7 @@ module.exports = function(babel) {
                     var addCssImports = state.opts.addCssImports || false;
                     var importMinifiedCssFiles = state.opts.importMinifiedCssFiles || false;
                     var addLessImports = state.opts.addLessImports || false;
+                    var addDuplicateStyleImports = state.opts.addDuplicateStyleImports || false;
 
                     if (!multipleStyleImportsChecked) {
                         if (addCssImports && addLessImports) {
@@ -319,7 +320,12 @@ module.exports = function(babel) {
                         }
                     }
 
-                    if (addLessImports || addCssImports) {
+                    // Skip adding style imports if replaceImports.length is > 0. replaceImports.length means that
+                    // member imports from semantic-ui-react are replaced with default imports. The plugin will hit the
+                    // default imports (as they are inserted after the current node) and can then add the style imports.
+                    // Otherwise the style imports would be added twice for the same import statement from
+                    // semantic-react-ui if addDuplicateStyleImports is true.
+                    if ((addLessImports || addCssImports) && replaceImports.length === 0) {
                         var componentFolderRegex = /[/\\](src|dist[/\\][^/\\]+)[/\\][^/\\]+[/\\]([^/\\]+)([/\\]|$)/;
                         var componentFolderMatch = componentFolderRegex.exec(importPath);
                         var componentFolder = componentFolderMatch && componentFolderMatch[2];
@@ -327,7 +333,7 @@ module.exports = function(babel) {
                         var addStyleImports = function(component) {
                             component = component.toLowerCase();
 
-                            if (addCssImports && !addedCssImports[component]) {
+                            if (addCssImports && (addDuplicateStyleImports || !addedCssImports[component])) {
                                 addedCssImports[component] = true;
 
                                 var cssImports = getCssImports(importMinifiedCssFiles);
@@ -341,7 +347,7 @@ module.exports = function(babel) {
                                 }
                             }
 
-                            if (addLessImports && !addedLessImports[component]) {
+                            if (addLessImports && (addDuplicateStyleImports || !addedLessImports[component])) {
                                 addedLessImports[component] = true;
 
                                 var lessImports = getLessImports();
