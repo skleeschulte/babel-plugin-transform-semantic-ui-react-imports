@@ -99,7 +99,8 @@ If true, imports for CSS files from `semantic-ui-css` will be added
 according to what is required from `semantic-ui-react`. Also works with
 `convertMemberImports=false`.
 
-This requires `semantic-ui-css` to be installed.
+This requires `semantic-ui-css` to be installed. See *Limitations*
+below.
 
 #### importMinifiedCssFiles (default: `false`)
 
@@ -110,7 +111,7 @@ If true, pre-minified CSS files from `semantic-ui-css` will be added
 
 If true, imports for LESS files from `semantic-ui-less` will be added
 according to what is required from `semantic-ui-react`. Also works with
-`convertMemberImports=false`.
+`convertMemberImports=false`. See *Limitations* below.
 
 This requires `semantic-ui-less` to be installed.
 
@@ -128,6 +129,30 @@ multiple times:
     import 'semantic-ui-css/components/menu.css';
     import MenuItem from 'semantic-ui-react/dist/es/collections/Menu/MenuItem.js';
     import 'semantic-ui-css/components/menu.css'; // only added if addDuplicateStyleImports is true
+
+### Limitations
+
+When using this plugin to automatically add styles (CSS or LESS), only
+imports for files with names equal to the imported semantic-ui-react
+module will be added. Additional style dependencies of a
+semantic-ui-react module will not be added automatically.
+
+Example:
+
+    import { Dropdown } from 'semantic-ui-react';
+
+With `addLessImports` enabled, the following import will be added:
+
+    import 'semantic-ui-less/definitions/modules/dropdown.less';
+
+The `Dropdown` module from semantic-ui-react also needs
+`collections/menu.less` and `modules/transition.less` as well as
+`globals/reset.less` and `globals/site.less` from
+`semantic-ui-less/definitions/`. These "additional" dependencies have to
+be added manually (also see issue #1).
+
+If someone knows a way to obtain a list of all style dependencies of the
+semantic-ui-react modules, please let me know!
 
 ### Combining with babel-plugin-lodash
 
