@@ -231,7 +231,7 @@ module.exports = function(babel) {
             babelPluginLodashChecked = false;
 
             const lodashPlugins = state.opts.plugins.filter(function(plugin) {
-                return plugin[0].key === 'lodash' || plugin[0].key === 'babel-plugin-lodash';
+                return plugin.key === 'lodash' || plugin.key === 'babel-plugin-lodash';
             });
 
             lodashPlugins.forEach(function(lodashPlugin) {
