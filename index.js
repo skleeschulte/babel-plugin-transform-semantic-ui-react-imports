@@ -209,6 +209,30 @@ function checkBabelPluginLodash(foundLodashPluginWithIdSemanticReactUi, convertM
     }
 }
 
+/**
+ * Checks if a babel configuration object matches a lodash plugin with semantic-ui-react in its id option.
+ * @param plugin A plugin config obtained from babel's state
+ */
+function isLodashPluginWithSemanticUiReact(plugin) {
+    if (Array.isArray(plugin)) {
+        // Babel 6 plugin is a tuple as an array [id, options]
+        return (
+            ["lodash", "babel-plugin-lodash"].includes(plugin[0].key) &&
+            [].concat(plugin[1].id).includes("semantic-ui-react")
+        );
+    } else if (plugin != null && typeof plugin === "object") {
+      // Babel 7 plugin is an object { key, options, ... }
+        return (
+            plugin.key.split("/").includes("babel-plugin-lodash") &&
+            plugin.options &&
+            plugin.options.id &&
+            [].concat(plugin.options.id).includes("semantic-ui-react")
+        );
+    } else {
+        return false;
+    }
+}
+
 module.exports = function(babel) {
     var types = babel.types;
 
@@ -227,24 +251,8 @@ module.exports = function(babel) {
 
             multipleStyleImportsChecked = false;
 
-            foundLodashPluginWithIdSemanticReactUi = false;
             babelPluginLodashChecked = false;
-
-            const lodashPlugins = state.opts.plugins.filter(function(plugin) {
-                return plugin[0].key === 'lodash' || plugin[0].key === 'babel-plugin-lodash';
-            });
-
-            lodashPlugins.forEach(function(lodashPlugin) {
-                if (lodashPlugin[1] && lodashPlugin[1].id) {
-                    var ids = [].concat(lodashPlugin[1].id);
-                    console.log(ids);
-                    ids.forEach(function(id) {
-                        if (id === 'semantic-ui-react') {
-                            foundLodashPluginWithIdSemanticReactUi = true;
-                        }
-                    });
-                }
-            });
+            foundLodashPluginWithIdSemanticReactUi = state.opts.plugins.some(isLodashPluginWithSemanticUiReact);
         },
 
         visitor: {
