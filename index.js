@@ -187,13 +187,13 @@ function getLessImports() {
 
 /**
  * Checks and warns if babel-plugin-lodash and this plugin are used in a way so that they might likely screw things up.
- * @param foundLodashPluginWithIdSemanticReactUi True if babel-plugin-lodash is mangling semantic-ui-react
+ * @param foundLodashPluginWithIdSemanticUiReact True if babel-plugin-lodash is mangling semantic-ui-react
  * @param convertMemberImports convertMemberImports setting
  * @param addLessImports addLessImports setting
  */
-function checkBabelPluginLodash(foundLodashPluginWithIdSemanticReactUi, convertMemberImports, addLessImports) {
+function checkBabelPluginLodash(foundLodashPluginWithIdSemanticUiReact, convertMemberImports, addLessImports) {
     if (convertMemberImports) {
-        if (foundLodashPluginWithIdSemanticReactUi) {
+        if (foundLodashPluginWithIdSemanticUiReact) {
             var msg = 'You are converting semantic-ui-react imports with this plugin and with ' +
                 'babel-plugin-lodash. Either remove semantic-ui-react from babel-plugin-lodash\'s id list, ' +
                 'or set convertMemberImports to false for this plugin.';
@@ -241,7 +241,7 @@ module.exports = function(babel) {
 
     var multipleStyleImportsChecked;
 
-    var foundLodashPluginWithIdSemanticReactUi;
+    var foundLodashPluginWithIdSemanticUiReact;
     var babelPluginLodashChecked;
 
     return {
@@ -252,7 +252,7 @@ module.exports = function(babel) {
             multipleStyleImportsChecked = false;
 
             babelPluginLodashChecked = false;
-            foundLodashPluginWithIdSemanticReactUi = state.opts.plugins.some(isLodashPluginWithSemanticUiReact);
+            foundLodashPluginWithIdSemanticUiReact = state.opts.plugins.some(isLodashPluginWithSemanticUiReact);
         },
 
         visitor: {
@@ -282,7 +282,7 @@ module.exports = function(babel) {
                     }
 
                     if (!babelPluginLodashChecked) {
-                        checkBabelPluginLodash(foundLodashPluginWithIdSemanticReactUi, convertMemberImports,
+                        checkBabelPluginLodash(foundLodashPluginWithIdSemanticUiReact, convertMemberImports,
                             addLessImports);
                         babelPluginLodashChecked = true;
                     }
