@@ -223,7 +223,7 @@ function isLodashPluginWithSemanticUiReact(plugin) {
     } else if (plugin != null && typeof plugin === "object") {
       // Babel 7 plugin is an object { key, options, ... }
         return (
-            plugin.key.split("/").includes("babel-plugin-lodash") &&
+            /[/\\]node_modules([/\\].*)?[/\\]babel-plugin-lodash([/\\].*)?$/.test(plugin.key) &&
             plugin.options &&
             plugin.options.id &&
             [].concat(plugin.options.id).includes("semantic-ui-react")
