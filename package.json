@@ -19,7 +19,7 @@
     },
     "main": "index.js",
     "scripts": {
-        "test": "mocha"
+        "test": "mocha --timeout 30000"
     },
     "devDependencies": {
         "@babel/core": "^7.3.4",
