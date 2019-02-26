@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/skleeschulte/babel-plugin-transform-semantic-ui-react-imports.svg?branch=master)](https://travis-ci.org/skleeschulte/babel-plugin-transform-semantic-ui-react-imports)
 
+Compatibility notice: As of version 1.4.0 this plugin is compatible with Babel 7. Compatibility with Babel 6 remains intact.
+
 This plugin can convert module imports from `semantic-ui-react` to
 default imports. Example:
 
