@@ -1,7 +1,7 @@
 {
     "name": "babel-plugin-transform-semantic-ui-react-imports",
     "version": "1.4.0",
-    "description": "Converts semantic-ui-react module imports to default imports and adds semantic-ui-less imports.",
+    "description": "Babel plugin that can convert semantic-ui-react module imports to default imports and add semantic-ui-css/-less imports.",
     "keywords": [
         "semantic-ui-react",
         "semantic-ui-css",
