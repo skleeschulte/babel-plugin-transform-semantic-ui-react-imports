@@ -1,1 +1,1 @@
-import { BreadcrumbDivider } from 'semantic-ui-react';
+import { BreadcrumbDivider } from "semantic-ui-react";

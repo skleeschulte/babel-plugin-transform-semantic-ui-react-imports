@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
-var babel = require('babel-core');
+var babel6 = require('babel-core');
+var babel7 = require('@babel/core');
 var assert = require('assert');
 
 function alignLines(string) {
@@ -13,26 +14,35 @@ function alignLines(string) {
 describe('babel-plugin-transform-semantic-ui-react-imports', function() {
     var fixtures = fs.readdirSync(path.resolve(__dirname, 'fixtures'));
 
-    fixtures.forEach(function(fixture) {
-        var fixtureDir = path.resolve(__dirname, 'fixtures', fixture);
+    var babelVersions = [
+        { name: "Babel 6", core: babel6 },
+        { name: "Babel 7", core: babel7 }
+        ];
 
-        if (path.basename(fixtureDir)[0] === '.' || !fs.statSync(fixtureDir).isDirectory()) return;
+    babelVersions.forEach(babelVersion => {
+        describe(babelVersion.name, function() {
+            fixtures.forEach(function(fixture) {
+                var fixtureDir = path.resolve(__dirname, 'fixtures', fixture);
 
-        var pluginOptions = require(path.resolve(fixtureDir, 'pluginOptions.json'));
-        var sourceFilePath = path.resolve(fixtureDir, 'source.js');
-        var expectedOutput = fs.readFileSync(path.resolve(fixtureDir, 'expected.js'), 'utf8');
+                if (path.basename(fixtureDir)[0] === '.' || !fs.statSync(fixtureDir).isDirectory()) return;
 
-        it(fixture.replace(/-/g, ' '), function() {
-            var transformed = babel.transformFileSync(sourceFilePath, {
-                babelrc: false,
-                compact: false,
-                plugins: [[path.resolve(__dirname, '../index.js'), pluginOptions]]
+                var pluginOptions = require(path.resolve(fixtureDir, 'pluginOptions.json'));
+                var sourceFilePath = path.resolve(fixtureDir, 'source.js');
+                var expectedOutput = fs.readFileSync(path.resolve(fixtureDir, 'expected.js'), 'utf8');
+
+                it(fixture.replace(/-/g, ' '), function() {
+                    var transformed = babelVersion.core.transformFileSync(sourceFilePath, {
+                        babelrc: false,
+                        compact: false,
+                        plugins: [[path.resolve(__dirname, '../index.js'), pluginOptions]]
+                    });
+
+                    assert.equal(
+                        alignLines(transformed.code),
+                        alignLines(expectedOutput)
+                    );
+                });
             });
-
-            assert.equal(
-                alignLines(transformed.code),
-                alignLines(expectedOutput)
-            );
         });
     });
 });
