@@ -23,11 +23,11 @@
     },
     "devDependencies": {
         "@babel/core": "^7.3.4",
-        "babel-core": "^6.25.0",
-        "mocha": "^3.4.2",
-        "semantic-ui-css": "^2.2.10",
-        "semantic-ui-less": "^2.2.10",
-        "semantic-ui-react": "^0.68.5"
+        "babel-core": "^6.26.3",
+        "mocha": "^6.0.2",
+        "semantic-ui-css": "^2.4.1",
+        "semantic-ui-less": "^2.4.1",
+        "semantic-ui-react": "^0.85.0"
     },
     "dependencies": {
         "colors": "^1.1.2",
